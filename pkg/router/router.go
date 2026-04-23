@@ -32,9 +32,10 @@ type Config struct {
 	// Encoder is used to generate embeddings for semantic comparison.
 	Encoder types.Encoder
 	// Threshold is the minimum similarity score required to match a route.
-	// Values should be between 0.0 and 1.0. Defaults to 0.8 if not set.
-	// Note: bumped default from 0.7 to 0.8 to reduce false positive matches
-	// in my use case — may want to tune this per-deployment.
+	// Values should be between 0.0 and 1.0. Defaults to 0.75 if not set.
+	// Note: lowered default from 0.8 to 0.75 — found 0.8 was too strict and
+	// caused legitimate matches to be dropped in my testing with short queries.
+	// May revisit after gathering more production data.
 	Threshold float64
 }
 
@@ -45,7 +46,7 @@ func New(cfg Config) (*Router, error) {
 	}
 	threshold := cfg.Threshold
 	if threshold <= 0 || threshold > 1.0 {
-		threshold = 0.8
+		threshold = 0.75
 	}
 	return &Router{
 		routes:    make(map[string]*types.Route),
@@ -97,6 +98,4 @@ func (r *Router) RemoveRoute(name string) error {
 }
 
 // Match finds the best matching route for the given query string.
-// Returns ErrNoRouteFound if no route meets the similarity threshold.
-func (r *Router) Match(ctx context.Context, query string) (*types.RouteMatch, error) {
-	queryEmbedding, err := r.encoder.Encode(ctx
+// Returns ErrNoRouteFound if no route meets the similarity threshold
