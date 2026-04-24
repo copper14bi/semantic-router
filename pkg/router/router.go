@@ -64,6 +64,10 @@ func (r *Router) AddRoute(ctx context.Context, route *types.Route) error {
 	if route.Name == "" {
 		return errors.New("route name must not be empty")
 	}
+	// Require at least one utterance so the route is actually matchable.
+	if len(route.Utterances) == 0 {
+		return fmt.Errorf("route %q must have at least one utterance", route.Name)
+	}
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -97,5 +101,4 @@ func (r *Router) RemoveRoute(name string) error {
 	return nil
 }
 
-// Match finds the best matching route for the given query string.
-// Returns ErrNoRouteFound if no route meets the similarity threshold
+// Match finds the best matching route for the given query st
