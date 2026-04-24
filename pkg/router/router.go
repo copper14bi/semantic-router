@@ -90,6 +90,8 @@ func (r *Router) AddRoute(ctx context.Context, route *types.Route) error {
 }
 
 // RemoveRoute removes a registered route by name.
+// Returns an error if the named route does not exist, so callers can detect
+// accidental double-removes or typos in route names early.
 func (r *Router) RemoveRoute(name string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -97,8 +99,7 @@ func (r *Router) RemoveRoute(name string) error {
 	if _, exists := r.routes[name]; !exists {
 		return fmt.Errorf("route %q not found", name)
 	}
+
 	delete(r.routes, name)
 	return nil
 }
-
-// Match finds the best matching route for the given query st
