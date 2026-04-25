@@ -91,8 +91,12 @@ func (r *Router) AddRoute(ctx context.Context, route *types.Route) error {
 
 // RemoveRoute removes a registered route by name.
 // Returns an error if the named route does not exist, so callers can detect
-// accidental double-removes or typos in route names early.
+// accidental double-removes (e.g. a bug where cleanup runs twice).
 func (r *Router) RemoveRoute(name string) error {
+	if name == "" {
+		return errors.New("route name must not be empty")
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
