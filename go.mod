@@ -1,4 +1,4 @@
-module github.com/vllm-project/semantic-router
+module github.com/my-fork/semantic-router
 
 go 1.22
 
