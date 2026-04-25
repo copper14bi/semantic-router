@@ -32,10 +32,10 @@ type Config struct {
 	// Encoder is used to generate embeddings for semantic comparison.
 	Encoder types.Encoder
 	// Threshold is the minimum similarity score required to match a route.
-	// Values should be between 0.0 and 1.0. Defaults to 0.75 if not set.
-	// Note: lowered default from 0.8 to 0.75 — found 0.8 was too strict and
-	// caused legitimate matches to be dropped in my testing with short queries.
-	// May revisit after gathering more production data.
+	// Values should be between 0.0 and 1.0. Defaults to 0.7 if not set.
+	// Note: lowered default from 0.75 to 0.7 — in my testing with conversational
+	// queries, 0.75 still misses some valid matches. 0.7 feels like a better
+	// starting point; callers can always tighten it via Config.Threshold.
 	Threshold float64
 }
 
@@ -46,7 +46,7 @@ func New(cfg Config) (*Router, error) {
 	}
 	threshold := cfg.Threshold
 	if threshold <= 0 || threshold > 1.0 {
-		threshold = 0.75
+		threshold = 0.7
 	}
 	return &Router{
 		routes:    make(map[string]*types.Route),
@@ -91,19 +91,4 @@ func (r *Router) AddRoute(ctx context.Context, route *types.Route) error {
 
 // RemoveRoute removes a registered route by name.
 // Returns an error if the named route does not exist, so callers can detect
-// accidental double-removes (e.g. a bug where cleanup runs twice).
-func (r *Router) RemoveRoute(name string) error {
-	if name == "" {
-		return errors.New("route name must not be empty")
-	}
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if _, exists := r.routes[name]; !exists {
-		return fmt.Errorf("route %q not found", name)
-	}
-
-	delete(r.routes, name)
-	return nil
-}
+// accidental doub
